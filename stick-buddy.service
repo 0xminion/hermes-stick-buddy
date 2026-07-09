@@ -7,7 +7,8 @@ Wants=network-online.target
 Type=simple
 ExecStart=/home/linuxuser/.hermes/hermes-agent/venv/bin/python3 /home/linuxuser/hermes-stick-buddy/server/app.py
 WorkingDirectory=/home/linuxuser/hermes-stick-buddy/server
-Environment=STICK_BUDDY_TOKEN=STICK_BUDDY_TOKEN_PLACEHOLDER
+EnvironmentFile=/home/linuxuser/hermes-stick-buddy/server/.env
+# Set STICK_BUDDY_TOKEN in the .env file, never commit it here
 Restart=always
 RestartSec=3
 User=linuxuser
