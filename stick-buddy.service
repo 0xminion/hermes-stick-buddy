@@ -1,0 +1,16 @@
+[Unit]
+Description=Hermes Stick Buddy — VPS aggregation server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/linuxuser/.hermes/hermes-agent/venv/bin/python3 /home/linuxuser/hermes-stick-buddy/server/app.py
+WorkingDirectory=/home/linuxuser/hermes-stick-buddy/server
+Environment=STICK_BUDDY_TOKEN=STICK_BUDDY_TOKEN_PLACEHOLDER
+Restart=always
+RestartSec=3
+User=linuxuser
+
+[Install]
+WantedBy=default.target

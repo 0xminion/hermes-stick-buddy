@@ -38,11 +38,19 @@ except ImportError:
     print("ERROR: requests not installed. Run: pip install requests")
     sys.exit(1)
 
-logging.basicConfig(
-    level=logging.INFO,
+import logging as _logging
+
+_logging.basicConfig(
+    level=_logging.INFO,
     format="%(asctime)s %(levelname)s: %(message)s",
+    stream=sys.stdout,
+    force=True,
 )
-logger = logging.getLogger("ble-central")
+# Ensure logs flush immediately (Windows can buffer)
+for handler in _logging.getLogger().handlers:
+    handler.flush = sys.stdout.flush
+
+logger = _logging.getLogger("ble-central")
 
 # Nordic UART Service UUIDs (from REFERENCE.md)
 NUS_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
@@ -106,13 +114,23 @@ class BleStickClient:
     async def scan(self, timeout: float = 10.0) -> Optional[object]:
         """Scan for the stick device. Returns the device or None."""
         logger.info(f"Scanning for BLE device starting with '{self.device_name_prefix}'...")
+        sys.stdout.flush()
 
         devices = await BleakScanner.discover(timeout=timeout)
+
+        # Log ALL found devices so we can debug discovery issues
+        if not devices:
+            logger.warning("BLE scan found ZERO devices. Check Bluetooth is on.")
+        else:
+            logger.info(f"BLE scan found {len(devices)} device(s):")
+            for d in devices:
+                name = d.name or "(unknown)"
+                logger.info(f"  {name} | {d.address} | RSSI={getattr(d, 'rssi', '?')}dBm")
 
         for device in devices:
             name = device.name or ""
             if name.startswith(self.device_name_prefix):
-                logger.info(f"Found device: {name} ({device.address})")
+                logger.info(f"Found target device: {name} ({device.address})")
                 self.device = device
                 return device
 
@@ -377,6 +395,7 @@ def main():
     logger.info(f"VPS URL: {url}")
     logger.info(f"SSL verify: {verify_ssl}")
     logger.info(f"Poll interval: {poll_interval}s")
+    sys.stdout.flush()
 
     asyncio.run(run_daemon(url, token, verify_ssl, poll_interval))
 
