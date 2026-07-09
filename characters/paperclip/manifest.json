@@ -1,0 +1,19 @@
+{
+  "name": "paperclip",
+  "colors": {
+    "body": "#9696A5",
+    "bg": "#000000",
+    "text": "#FFFFFF",
+    "textDim": "#5A5A6E",
+    "ink": "#000000"
+  },
+  "states": {
+    "sleep": "sleep.gif",
+    "idle": "idle.gif",
+    "busy": "busy.gif",
+    "attention": "attention.gif",
+    "celebrate": "celebrate.gif",
+    "dizzy": "dizzy.gif",
+    "heart": "heart.gif"
+  }
+}
