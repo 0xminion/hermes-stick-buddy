@@ -102,7 +102,12 @@ class VpsClient:
 
 
 class BleStickClient:
-    """BLE client for the M5StickC Plus running the buddy firmware."""
+    """BLE client for the M5StickC Plus running the buddy firmware.
+
+    The firmware requires LE Secure Connections bonding (MITM, passkey entry).
+    On Windows, bleak handles this via the OS pairing dialog — the user types
+    the passkey shown on the stick's screen.
+    """
 
     def __init__(self, device_name_prefix: str = DEVICE_NAME_PREFIX):
         self.device_name_prefix = device_name_prefix
@@ -138,7 +143,13 @@ class BleStickClient:
         return None
 
     async def connect(self, max_retries: int = 3) -> bool:
-        """Connect to the stick and subscribe to TX notifications."""
+        """Connect to the stick and subscribe to TX notifications.
+
+        The firmware requires LE Secure Connections bonding. On Windows,
+        bleak triggers the OS-level pairing flow automatically when we
+        try to access encrypted characteristics. The stick displays a
+        6-digit passkey — Windows shows a pairing dialog where you enter it.
+        """
         if self._connected and self.client and self.client.is_connected:
             return True
 
@@ -161,6 +172,19 @@ class BleStickClient:
                     self.device,
                     disconnected_callback=self._on_disconnect,
                 )
+                # The firmware uses LE Secure Connections with MITM (passkey).
+                # On Windows, bleak will trigger OS pairing when we access
+                # encrypted characteristics. We need to pair first.
+                try:
+                    await self.client.pair()
+                    logger.info("BLE pairing succeeded")
+                except Exception as pair_err:
+                    logger.warning(
+                        f"Pairing call failed (may prompt OS dialog): {pair_err}"
+                    )
+                    # Continue anyway — the write_gatt_char call below
+                    # may trigger the OS pairing dialog on Windows
+
                 await self.client.connect()
                 await self.client.start_notify(NUS_TX_CHAR_UUID, self._on_tx_notify)
                 self._connected = True
