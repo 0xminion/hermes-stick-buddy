@@ -63,8 +63,19 @@ if (-not $pio) {
         Write-Ok "PlatformIO found at $pioExe"
     } else {
         Write-Host "  Installing PlatformIO via pip..."
-        & $pyExe -m pip install --user platformio 2>&1 | Out-Host
-        $pioExe = "$env:APPDATA\Python\Scripts\pio.exe"
+        # Detect if we're inside a virtualenv — --user doesn't work there
+        $venvCheck = & $pyExe -c "import sys; print(hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix))" 2>&1
+        $inVenv = $venvCheck -match "True"
+        if ($inVenv) {
+            Write-Host "  (Virtualenv detected — installing without --user)"
+            & $pyExe -m pip install platformio 2>&1 | Out-Host
+            # In venv, pio goes to the venv's Scripts dir
+            $venvScripts = & $pyExe -c "import sys,os; print(os.path.join(os.path.dirname(sys.executable), 'Scripts' if os.name=='nt' else 'bin'))" 2>&1
+            $pioExe = "$venvScripts\pio.exe"
+        } else {
+            & $pyExe -m pip install --user platformio 2>&1 | Out-Host
+            $pioExe = "$env:APPDATA\Python\Scripts\pio.exe"
+        }
         if (-not (Test-Path $pioExe)) {
             # Try alternative location
             $pioExe = "$env:LOCALAPPDATA\Programs\Python\Python3*\Scripts\pio.exe"

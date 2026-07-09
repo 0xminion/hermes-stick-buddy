@@ -28,17 +28,20 @@ if %errorlevel% neq 0 (
 echo [OK] Python found: %PY%
 %PY% --version
 
-REM Install PlatformIO
+REM Install PlatformIO (detect virtualenv)
 echo.
 echo === Installing PlatformIO ===
-%PY% -m pip install --user platformio
-if %errorlevel% neq 0 (
-    echo [X] PlatformIO installation failed
-    exit /b 1
+REM Check if in virtualenv (--user doesn't work in venv)
+%PY% -c "import sys; exit(0 if (hasattr(sys,'real_prefix') or (hasattr(sys,'base_prefix') and sys.base_prefix != sys.prefix)) else 1)"
+if %errorlevel% equ 0 (
+    echo (Virtualenv detected — installing without --user^)
+    %PY% -m pip install platformio
+    REM Get venv Scripts dir
+    for /f "delims=" %%i in ('%PY% -c "import sys,os; print(os.path.join(os.path.dirname(sys.executable),'Scripts'))"') do set PIO=%%i\pio.exe
+) else (
+    %PY% -m pip install --user platformio
+    set PIO=%APPDATA%\Python\Scripts\pio.exe
 )
-
-REM Find pio
-set PIO=%APPDATA%\Python\Scripts\pio.exe
 if not exist "%PIO%" (
     set PIO=%LOCALAPPDATA%\Programs\Python\Python3*\Scripts\pio.exe
     for %%f in (%PIO%) do set PIO=%%f
