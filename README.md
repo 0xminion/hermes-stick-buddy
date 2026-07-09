@@ -8,6 +8,46 @@ firmware. The stick runs **stock firmware** — no modifications needed.
 A Python bridge replaces Claude Desktop's native BLE bridge with your
 own, aggregating data from multiple sources into the same wire protocol.
 
+## Quickstart — Connect the stick to a new Windows machine
+
+The VPS server is already running (systemd `stick-buddy.service`, Tailscale serve `:9120`).
+On any Windows machine with Bluetooth:
+
+```powershell
+git clone https://github.com/0xminion/hermes-stick-buddy.git
+cd hermes-stick-buddy\server
+pip install bleak requests pyyaml
+python ble_central.py --url https://YOUR-VPS.tailnet:9120 --token STICK_BUDDY_TOKEN_PLACEHOLDER
+```
+
+The daemon scans for BLE devices named `Claude*`, pairs with the stick
+(Windows shows a pairing dialog, stick shows a 6-digit passkey), and
+starts sending heartbeats every 5s.
+
+**BLE is 1:1** — the stick pairs with one machine at a time. To move it
+to another desk, stop the daemon on machine A, start it on machine B.
+The stick re-pairs automatically (stored bond, no re-entering passkey).
+
+## First-time setup
+
+If the stick has never been flashed (or needs a firmware update):
+
+```powershell
+git clone https://github.com/0xminion/hermes-stick-buddy.git
+cd hermes-stick-buddy
+pip install platformio
+pio platform install espressif32
+pio run -t upload
+```
+
+To flash the Clippy paperclip character (USB, one-time):
+
+```powershell
+python tools\flash_character.py characters\paperclip
+```
+
+Then on the stick: hold A → settings → species → GIF.
+
 ## Architecture
 
 ```
