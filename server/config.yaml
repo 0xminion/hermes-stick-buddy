@@ -1,0 +1,34 @@
+# Hermes Stick Buddy — VPS-side aggregation server config
+# All settings live here. .env is for secrets only (API key for the server itself).
+
+server:
+  host: "127.0.0.1"       # Bind locally — Tailscale serve proxies externally
+  port: 9120              # Distinct from hermes-serve (9119)
+
+# Data source paths (all on VPS filesystem)
+sources:
+  claude_code_dir: "~/.claude/projects"     # Claude Code session JSONL files
+  codex_sessions_dir: "~/.codex/sessions"   # Codex CLI session files
+  codex_logs_db: "~/.codex/logs_2.sqlite"   # Codex SQLite logs (for process activity)
+  hermes_state_db: "~/.hermes/state.db"     # Hermes session DB (token tracking)
+  hermes_logs_dir: "~/.hermes/logs"          # Hermes logs (for live activity)
+  ollama_url: "http://localhost:11434"      # Ollama native API
+  ollama_proxy_url: "http://localhost:11435" # Ollama proxy (OpenAI-compatible)
+
+# Token tracking windows
+windows:
+  five_hour_seconds: 18000    # 5 hours
+  weekly_seconds: 604800       # 7 days
+
+# Polling intervals (seconds)
+polling:
+  hermes_sessions: 5          # How often to query Hermes state DB
+  claude_code: 30              # How often to scan Claude Code sessions
+  codex: 30                    # How often to scan Codex sessions
+  ollama: 15                   # How often to poll Ollama for loaded models
+
+# Auth — simple bearer token for the BLE central daemon to authenticate
+auth:
+  # Generate with: python3 -c "import secrets; print(secrets.token_hex(16))"
+  # Put the actual token in .env as STICK_BUDDY_TOKEN
+  token_env: "STICK_BUDDY_TOKEN"

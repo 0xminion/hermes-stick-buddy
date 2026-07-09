@@ -1,4 +1,23 @@
-.pio/
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+stick-buddy-venv/
+
+# IDE
 .vscode/
+.idea/
+
+# OS
 .DS_Store
-data/
+Thumbs.db
+
+# Secrets
+.env
+
+# Build artifacts
+.pio/
+.pioenvs/
+.piolibdeps/
