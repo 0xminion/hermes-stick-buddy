@@ -17,7 +17,18 @@ On any Windows machine with Bluetooth:
 git clone https://github.com/0xminion/hermes-stick-buddy.git
 cd hermes-stick-buddy\server
 pip install bleak requests pyyaml
-python ble_central.py --url https://YOUR-VPS.tailnet:9120 --token STICK_BUDDY_TOKEN_PLACEHOLDER
+
+# Set your VPS URL and auth token (get these from your VPS)
+set STICK_BUDDY_URL=https://YOUR-VPS.tailnet:9120
+set STICK_BUDDY_TOKEN=YOUR_TOKEN_HERE
+
+python ble_central.py
+```
+
+Or pass them directly:
+
+```powershell
+python ble_central.py --url https://YOUR-VPS.tailnet:9120 --token YOUR_TOKEN
 ```
 
 The daemon scans for BLE devices named `Claude*`, pairs with the stick
