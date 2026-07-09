@@ -153,8 +153,12 @@ class BleStickClient:
                 logger.info(
                     f"Connecting to {self.device.name} (attempt {attempt + 1})..."
                 )
+                # On Windows, pass the full device object — connecting by
+                # address string alone fails after scan completes because the
+                # device is no longer discoverable. BleakClient accepts a
+                # BLEDevice directly.
                 self.client = BleakClient(
-                    self.device.address,
+                    self.device,
                     disconnected_callback=self._on_disconnect,
                 )
                 await self.client.connect()
